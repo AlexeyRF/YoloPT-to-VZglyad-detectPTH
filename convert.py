@@ -18,8 +18,21 @@ def convert_model(input_path, output_path):
     }
     state_dict = pytorch_model.state_dict()
     
+    # Map end2end one2one branches to standard cv2/cv3 for inference
+    new_state_dict = {}
+    for k, v in state_dict.items():
+        new_state_dict[k] = v
+        
+    for k, v in state_dict.items():
+        if 'one2one_cv2' in k:
+            new_state_dict[k.replace('one2one_cv2', 'cv2')] = v
+            del new_state_dict[k]
+        elif 'one2one_cv3' in k:
+            new_state_dict[k.replace('one2one_cv3', 'cv3')] = v
+            del new_state_dict[k]
+
     torch.save({
-        'state_dict': state_dict,
+        'state_dict': new_state_dict,
         'metadata': metadata,
         'yaml': yaml_config
     }, output_path)
